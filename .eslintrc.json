@@ -1,0 +1,33 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "script",
+        "ecmaFeatures": {
+            "impliedStrict": true
+        }
+    },
+
+    "env": {
+        "browser": true,
+        "node": true,
+        "commonjs": true,
+        "shared-node-browser": true
+    }, 
+
+    "extends": [
+        "airbnb-base",
+        "eslint:recommended"
+    ],
+
+    "rules": {
+        "no-plusplus": "off",
+        "no-bitwise": "off",
+        "no-param-reassign" : ["error", { "props": false }],
+        "no-use-before-define": ["error", { 
+            "functions": false,
+            "classes": true,
+            "variables": true 
+            }
+        ]
+    }
+}

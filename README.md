@@ -2,12 +2,19 @@ dualsalt-js
 ===========
 
 JavaScript library for dual-signing and dual-decryption; a port of the Java library "dualsalt".
-...
 
 Log
 ====
 
 Events in reverse chronological order (last one fist).
+
+
+2018-06-14
+==========
+
+Alex Reshniuk:
+DualSalt API ported 100%. 
+Passing all deterministic unit tests.
 
 
 2018-05-18
