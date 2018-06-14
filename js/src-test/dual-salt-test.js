@@ -8,7 +8,7 @@ const dualsalt = DualSalt();
 module.exports = () => {
   'use-strict';
 
-  function stringToUint8Array(string) {
+  /* private */ function stringToUint8Array(string) {
     const charList = unescape(encodeURIComponent(string)).split('');
     const uintArray = [];
     for (let i = 0; i < charList.length; i++) {
@@ -381,7 +381,8 @@ module.exports = () => {
 
     console.info('Message decryption validation fail when it shall');
   }
-  /* private */ function run() {
+ 
+  function run() {
     try {
       const rand1 = util.hex2Uint8Array('ac49000da11249ea3510941703a7e21a39837c4d2d5300daebbd532df20f8135');
       const rand2 = util.hex2Uint8Array('e56f0eef73ade8f79bc1d16a99cbc5e4995afd8c14adb49410ecd957aecc8d02');
@@ -428,7 +429,12 @@ module.exports = () => {
     console.info('\nSUCCESS! All tests passed.');
   }
 
+  /* public members */
   return {
     run,
+    testRotateKeys,
+    testDualSign,
+    testSingleDecrypt,
+    testDualDecrypt
   };
 };

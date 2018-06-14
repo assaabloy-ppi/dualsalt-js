@@ -2,25 +2,27 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<script src="bundle.js"></script>
+<script>
+	function loadBundle()  {
+		var scriptTag = document.createElement('script');
+		scriptTag.setAttribute('src','bundle.js');
+		document.head.appendChild(scriptTag)
+	}
+</script>
 </head>
-
 <body>
 
+<p>To run "run-tests.js" in browser:</p>
+<ol>
+	<li>Open JavaScript console</li>
+	<li>Click RUN button</li>
+	<li>See console output</li>
+</ol>
+<p></p>
+<p></p>
 
-	  <!-- <script data-main="app" src="lib/require.js"></script> -->
-
-	<!-- The transpiled output of the QuickStart.java source file (mvn generate-sources) -->
-<!--	<script type="text/javascript" src="../../lib/nacl-fast.js"></script>
-
-	<script type="text/javascript" src="../log.js"></script>
-	<script type="text/javascript" src="../../src/dual-salt.js"></script>
-	<script type="text/javascript" src="../dual-salt-test.js"></script>		
-	<script type="text/javascript" src="../dual-salt-random-test.js"></script>
--->	
-	<!--<script type="text/javascript" src="../run-tests.js"></script>-->
-<p>See JavaScript console for output</p>
-
+<button type="button" onclick="this.disabled=true; loadBundle()">RUN</button>
+<!-- <script src="bundle.js"></script>-->
 
 </body>
 </html>

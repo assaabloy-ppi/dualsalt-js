@@ -1,7 +1,8 @@
 const DualSaltTest = require('./dual-salt-test.js');
-// let DualSaltRandomTest = require('./dual-salt-random-test.js')
-
+const DualSaltRandomTest = require('./dual-salt-random-test.js')
 
 const dualSaltTest = DualSaltTest();
+const dualSaltRandomTest = DualSaltRandomTest();
+
 dualSaltTest.run();
-// DualSaltRandomTest.main();
+dualSaltRandomTest.run();
