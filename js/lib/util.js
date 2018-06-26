@@ -109,6 +109,30 @@ exports.arraycopy = (src, srcPos, dest, destPos, length) => {
   dest.set(src.subarray(srcPos, srcPos + length), destPos);
 };
 
+exports.parseTestVectorFile = (fileName, recordCb) => {
+
+  const fs = require('fs');
+  //const filename = 'sign.input';
+  
+  let fd = fs.openSync(fileName, 'r');
+  let bufferSize = 1024;
+  let buffer = new Buffer(bufferSize);
+  
+  let leftOver = '';
+  let read, line, idxStart, idx;
+  while ((read = fs.readSync(fd, buffer, 0, bufferSize, null)) !== 0) {
+    leftOver += buffer.toString('ascii', 0, read);
+    idxStart = 0
+    while ((idx = leftOver.indexOf('\n', idxStart)) !== -1) {
+      line = leftOver.substring(idxStart, idx);
+      recordCb(line.split(':'));
+
+      idxStart = idx + 1;
+    }
+    leftOver = leftOver.substring(idxStart);
+  }
+};
+
 // exports.stringToUint8Array = (str) => {
 //
 // }
