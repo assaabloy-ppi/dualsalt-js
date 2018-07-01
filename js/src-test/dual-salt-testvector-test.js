@@ -1,10 +1,10 @@
 const util = require('../lib/util.js');
-const nacl = require('../lib/nacl-fast.js');
+//const nacl = require('../lib/nacl-fast.js');
 const DualSalt = require('../src/dual-salt.js');
-const DualSaltTest = require('./dual-salt-test.js');
+//const DualSaltTest = require('./dual-salt-test.js');
 
 const dualsalt = DualSalt();
-const dualsalttest = DualSaltTest();
+//const dualsalttest = DualSaltTest();
 
 module.exports = () => {
   'use-strict';
@@ -36,7 +36,7 @@ module.exports = () => {
             throw new Error("Signature do not match");
         }
 
-        if (++counter % 100 == 0)
+        if (++counter % 100 === 0)
           console.info("... vectors processed: ", counter);
       }
     );
@@ -89,7 +89,7 @@ module.exports = () => {
                 throw new Error("Signature do not match test signature");
             }
     
-            if (++counter % 100 == 0)
+            if (++counter % 100 === 0)
               console.info("... vectors processed: ", counter);
           }
         );
@@ -106,9 +106,8 @@ module.exports = () => {
             const dutKeySeed = util.hex2Uint8Array(record[0]);
             const dutPublicKey = util.hex2Uint8Array(record[1]);
             const dutTempKeySeed = util.hex2Uint8Array(record[2]);
-            const dutNonce = util.hex2Uint8Array(record[3]);
-            const dutMessage = util.hex2Uint8Array(record[4]);
-            const dutChipperText = util.hex2Uint8Array(record[5]);
+            const dutMessage = util.hex2Uint8Array(record[3]);
+            const dutChipperText = util.hex2Uint8Array(record[4]);
 
             let secretKey = new Uint8Array(dualsalt.secretKeyLength);
             let publicKey = new Uint8Array(dualsalt.publicKeyLength);
@@ -118,9 +117,8 @@ module.exports = () => {
                 throw new Error("Public key do not match");
             }
 
-            const nonce = new Uint8Array(dualsalt.nonceLength);
-            const chipperText = dualsalt.encrypt(dutMessage, dutNonce, publicKey, dutTempKeySeed);
-            const message = dualsalt.decrypt(chipperText, nonce, secretKey);            
+            const chipperText = dualsalt.encrypt(dutMessage, publicKey, dutTempKeySeed);
+            const message = dualsalt.decrypt(chipperText, secretKey);            
 
             if (!util.uint8ArrayEquals(chipperText, dutChipperText)) {
                 throw new Error("Did not encrypt correctly");
@@ -128,13 +126,9 @@ module.exports = () => {
 
             if (!util.uint8ArrayEquals(message, dutMessage)) {
                 throw new Error("Did not decrypt correctly");
-            }
+            }          
 
-            if (!util.uint8ArrayEquals(nonce, dutNonce)) {
-                throw new Error("Nonce do not match");
-            }            
-
-            if (++counter % 100 == 0)
+            if (++counter % 100 === 0)
               console.info("... vectors processed: ", counter);
           }
         );
@@ -153,9 +147,8 @@ module.exports = () => {
             const dutPublicPartB = util.hex2Uint8Array(record[3]);
             const dutVirtualPublicKey = util.hex2Uint8Array(record[4]);
             const dutTempKeySeed = util.hex2Uint8Array(record[5]);
-            const dutNonce = util.hex2Uint8Array(record[6]);
-            const dutMessage = util.hex2Uint8Array(record[7]);
-            const dutChipperText = util.hex2Uint8Array(record[8]);
+            const dutMessage = util.hex2Uint8Array(record[6]);
+            const dutChipperText = util.hex2Uint8Array(record[7]);
 
             let secretKeyA = new Uint8Array(dualsalt.secretKeyLength);
             let publicKeyA = new Uint8Array(dualsalt.publicKeyLength);
@@ -177,10 +170,9 @@ module.exports = () => {
                 throw new Error("Virtual public key do not match");
             }
 
-            const nonce = new Uint8Array(dualsalt.nonceLength);
-            const chipperText = dualsalt.encrypt(dutMessage, dutNonce, virtualPublicKey, dutTempKeySeed);
+            const chipperText = dualsalt.encrypt(dutMessage, virtualPublicKey, dutTempKeySeed);
             const d1 = dualsalt.decryptDual1(chipperText, secretKeyA);
-            const message = dualsalt.decryptDual2(d1, chipperText, nonce, secretKeyB);          
+            const message = dualsalt.decryptDual2(d1, chipperText, secretKeyB);          
 
             if (!util.uint8ArrayEquals(chipperText, dutChipperText)) {
                 throw new Error("Did not encrypt correctly");
@@ -188,13 +180,9 @@ module.exports = () => {
 
             if (!util.uint8ArrayEquals(message, dutMessage)) {
                 throw new Error("Did not decrypt correctly");
-            }
+            }        
 
-            if (!util.uint8ArrayEquals(nonce, dutNonce)) {
-                throw new Error("Nonce do not match");
-            }            
-
-            if (++counter % 100 == 0)
+            if (++counter % 100 === 0)
               console.info("... vectors processed: ", counter);
           }
         );
@@ -257,7 +245,7 @@ module.exports = () => {
                 throw new Error("Secret Key B was not updated correctly");
             }            
 
-            if (++counter % 100 == 0)
+            if (++counter % 100 === 0)
               console.info("... vectors processed: ", counter);
           }
         );

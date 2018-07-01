@@ -21,10 +21,10 @@ module.exports = () => {
   const { nonceLength } = nacl.box;
   const { seedLength } = nacl.sign;
   const { signatureLength } = nacl.sign;
-  const cipherMessageHeaderLength = nonceLength + publicKeyLength;
   const m1HeaderLength = nacl.scalarMult.groupElementLength + publicKeyLength;
   const m2Length = signatureLength;
   const d1Length = nacl.scalarMult.groupElementLength;
+  const nonce = new Uint8Array(nonceLength);
 
   /**
      * Create key pair. The secret key is not compatible with Tweetnacl but the
@@ -507,17 +507,14 @@ module.exports = () => {
      *
      * @param {Array} message
      * The message to be encrypted
-     * @param {Array} nonce
-     * The nonce use
      * @param {Array} toPublicKey
      * The public key to encrypt to
      * @param {Array} random
      * Random
      * @return {Array} The cipher message
      */
-  function encrypt(message, nonce, toPublicKey, random) {
+  function encrypt(message, toPublicKey, random) {
     if (message == null) { throw new TypeError('The message is null'); }
-    if (nonce.length !== nonceLength) { throw new TypeError('Nonce has the wrong length'); }
     if (toPublicKey.length !== publicKeyLength) { throw new TypeError('Public key has the wrong length'); }
     if (random.length !== seedLength) { throw new TypeError('Random seed has the wrong length'); }
 
@@ -530,12 +527,11 @@ module.exports = () => {
     const q = unpack(toPublicKey);
     nacl.lowlevel.scalarmult(p, q, tempSecretKey);
     nacl.lowlevel.pack(sharedGroupEl, p);
-    const cipherText = encryptWithSharedGroupEl(message, nonce, sharedGroupEl);
+    const cipherText = encryptWithSharedGroupEl(message, sharedGroupEl);
 
-    const cipherMessage = new Uint8Array(cipherMessageHeaderLength + cipherText.length);
-    util.arraycopy(nonce, 0, cipherMessage, 0, nonceLength);
-    util.arraycopy(tempPublicKey, 0, cipherMessage, nonceLength, publicKeyLength);
-    util.arraycopy(cipherText, 0, cipherMessage, cipherMessageHeaderLength, cipherText.length);
+    const cipherMessage = new Uint8Array(publicKeyLength + cipherText.length);
+    util.arraycopy(tempPublicKey, 0, cipherMessage, 0, publicKeyLength);
+    util.arraycopy(cipherText, 0, cipherMessage, publicKeyLength, cipherText.length);
     return cipherMessage;
   }
 
@@ -544,21 +540,17 @@ module.exports = () => {
      *
      * @param {Array} cipherMessage
      * The cipher message
-     * @param {Array} nonce
-     * (out) The nonce that was use in hte encryption
      * @param {Array} secretKey
      * The secret key encrypted to
      * @return {Array} The decrypted message
      */
-  function decrypt(cipherMessage, nonce, secretKey) {
-    if (cipherMessage.length <= cipherMessageHeaderLength) { throw new TypeError('The cipher message is to short'); }
-    if (nonce.length !== nonceLength) { throw new TypeError('Nonce has the wrong length'); }
+  function decrypt(cipherMessage, secretKey) {
+    if (cipherMessage.length <= publicKeyLength) { throw new TypeError('The cipher message is to short'); }
     if (secretKey.length !== secretKeyLength) { throw new TypeError('Secret key has the wrong length'); }
 
-    const cipherText = new Uint8Array(cipherMessage.subarray(cipherMessageHeaderLength, cipherMessage.length));
-    util.arraycopy(cipherMessage, 0, nonce, 0, nonceLength);
+    const cipherText = new Uint8Array(cipherMessage.subarray(publicKeyLength, cipherMessage.length));
     const sharedGroupEl = decryptDual1(cipherMessage, secretKey);
-    return decryptWithSharedGroupEl(cipherText, nonce, sharedGroupEl);
+    return decryptWithSharedGroupEl(cipherText, sharedGroupEl);
   }
 
   /**
@@ -576,11 +568,11 @@ module.exports = () => {
      * @return {Array} d1 a message used in decryptDual2() to finish the decryption
      */
   function decryptDual1(cipherMessage, secretKeyA) {
-    if (cipherMessage.length <= cipherMessageHeaderLength) { throw new TypeError('The cipher message is to short'); }
+    if (cipherMessage.length <= publicKeyLength) { throw new TypeError('The cipher message is to short'); }
     if (secretKeyA.length !== secretKeyLength) { throw new TypeError('Secret key has the wrong length'); }
 
     const d1 = new Uint8Array(d1Length);
-    const tempPublicKey = new Uint8Array(cipherMessage.subarray(nonceLength, cipherMessageHeaderLength));
+    const tempPublicKey = new Uint8Array(cipherMessage.subarray(0, publicKeyLength));
     const p = createUnpackedGroupEl();
     const q = unpack(tempPublicKey);
     nacl.lowlevel.scalarmult(p, q, secretKeyA);
@@ -595,21 +587,17 @@ module.exports = () => {
          * d1 a message from decryptDual1()
          * @param {Array} cipherMessage
          * The cipher message to be decrypted
-         * @param {Array} nonce
-         * (out) The nonce that was use in hte encryption
          * @param {Array} secretKeyB
          * The second secret key to be used in hte decryption
          * @return {Array} The decrypted message
          */
-  function decryptDual2(d1, cipherMessage, nonce, secretKeyB) {
+  function decryptDual2(d1, cipherMessage, secretKeyB) {
     if (d1.length !== d1Length) { throw new TypeError('D1 has the wrong length'); }
-    if (cipherMessage.length <= cipherMessageHeaderLength) { throw new TypeError('The cipher message is to short'); }
-    if (nonce.length !== nonceLength) { throw new TypeError('Nonce has the wrong length'); }
+    if (cipherMessage.length <= publicKeyLength) { throw new TypeError('The cipher message is to short'); }
     if (secretKeyB.length !== secretKeyLength) { throw new TypeError('Secret key has the wrong length'); }
 
-    util.arraycopy(cipherMessage, 0, nonce, 0, nonceLength);
-    const tempPublicKey = new Uint8Array(cipherMessage.subarray(nonceLength, cipherMessageHeaderLength));
-    const cipherText = new Uint8Array(cipherMessage.subarray(cipherMessageHeaderLength, cipherMessage.length));
+    const tempPublicKey = new Uint8Array(cipherMessage.subarray(0, publicKeyLength));
+    const cipherText = new Uint8Array(cipherMessage.subarray(publicKeyLength, cipherMessage.length));
 
     const sharedGroupEl = new Uint8Array(nacl.scalarMult.groupElementLength);
     const p = createUnpackedGroupEl();
@@ -618,7 +606,7 @@ module.exports = () => {
     q = unpack(d1);
     nacl.lowlevel.add(p, q);
     nacl.lowlevel.pack(sharedGroupEl, p);
-    return decryptWithSharedGroupEl(cipherText, nonce, sharedGroupEl);
+    return decryptWithSharedGroupEl(cipherText, sharedGroupEl);
   }
 
   /**
@@ -628,14 +616,12 @@ module.exports = () => {
      *
      * @param {Array} message
      * Message to be encrypted
-     * @param {Array} nonce
-     * The nonce
      * @param {Array} sharedGroupEl
      * The shared group element used as key
      * @return {Array} The cipher text
      * @private
      */
-  /* private */ function encryptWithSharedGroupEl(message, nonce, sharedGroupEl) {
+  /* private */ function encryptWithSharedGroupEl(message, sharedGroupEl) {
     const sharedKey = new Uint8Array(nacl.box.sharedKeyLength);
     nacl.lowlevel.crypto_core_hsalsa20(sharedKey, nacl.lowlevel._0, sharedGroupEl, nacl.lowlevel.sigma);
 
@@ -653,14 +639,12 @@ module.exports = () => {
          *
          * @param {Array} cipherText
          * Data to be decrypted
-         * @param {Array} nonce
-         * The nonce
          * @param {Array} sharedGroupEl
          * The shared group element used as key
          * @return {Array} The decrypted message
          * @private
          */
-  /* private */ function decryptWithSharedGroupEl(cipherText, nonce, sharedGroupEl) {
+  /* private */ function decryptWithSharedGroupEl(cipherText, sharedGroupEl) {
     const sharedKey = new Uint8Array(nacl.box.sharedKeyLength);
     nacl.lowlevel.crypto_core_hsalsa20(sharedKey, nacl.lowlevel._0, sharedGroupEl, nacl.lowlevel.sigma);
     const cipherBuffer = new Uint8Array(nacl.lowlevel.crypto_box_BOXZEROBYTES + cipherText.length);
