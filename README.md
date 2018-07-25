@@ -6,7 +6,7 @@ JavaScript library for dual-signing and dual-decryption; a port of the Java libr
 Testing
 =======
 
-Change current directory to `src-test`.
+Change current directory to `js/src-test`.
 
 Run unit tests in NodeJS: ```npm run node-test```
 
@@ -14,7 +14,7 @@ Run unit tests in all browsers installed in system (autodetection):
 ```npm run browser-test```
 
 
-__Details:__ See README.md in [src-test](src-test)
+__Details:__ See README.md in [js/src-test](js/src-test)
 
 Log
 ====
