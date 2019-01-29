@@ -1,5 +1,5 @@
 
-Do not use! Not secure! Do not follow: https://github.com/assaabloy-ppi/dualsalt
+Do not use! Not secure! Do not follow: [DualSalt-Java](https://github.com/assaabloy-ppi/dualsalt)
 =======================
 
 dualsalt-js
