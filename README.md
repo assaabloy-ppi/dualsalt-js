@@ -1,3 +1,7 @@
+
+Do not use! Not secure! Do not follow: https://github.com/assaabloy-ppi/dualsalt
+=======================
+
 dualsalt-js
 ===========
 
